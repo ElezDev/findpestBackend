@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PetController;
-
+use App\Http\Controllers\PetImageController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -24,5 +24,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('pets/{pet}', [PetController::class, 'destroy']);
 });
 
+Route::apiResource('images_pets', PetImageController::class)->only(['index', 'show', 'store', 'destroy']);
+Route::post('images_pets/{id}', [PetImageController::class, 'update']);
 
 Route::middleware('auth:api')->get('user_data', [AuthController::class, 'getAuthenticatedUser']);

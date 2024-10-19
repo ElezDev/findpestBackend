@@ -8,21 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class PetImage extends Model
 {
     use HasFactory;
-    protected $appends = ['urlImage'];
+    protected $guarded = ['id'];
 
-    public function getUrlImageAttribute()
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
     {
         if (
-            isset($this->attributes['urlImage']) &&
-            isset($this->attributes['urlImage'][0])
+            isset($this->attributes['image_url']) &&
+            isset($this->attributes['image_url'][0])
         ) {
-            return url($this->attributes['urlImage']);
+            return url($this->attributes['image_url']);
         }
     }
-    protected $fillable = [
-        'pet_id',
-        'urlImage',
-    ];
 
     public function pet()
     {
