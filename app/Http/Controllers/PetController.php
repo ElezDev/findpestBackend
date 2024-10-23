@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pet;
-use App\Models\PetImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Storage;
 
 class PetController extends Controller
 {
@@ -26,56 +24,39 @@ class PetController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'age' => 'required|integer',
-            'breed' => 'required|string',
-            'size' => 'required|string',
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'age' => 'required|integer|min:0',
+            'breed' => 'required|string|max:255',
+            'size' => 'required|string|max:255',
             'description' => 'required|string',
-            'location' => 'required|string',
+            'location' => 'required|string|max:255',
             'adoption_status' => 'required|in:available,adopted,in_process',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validar las imágenes
+            'latitude' => 'required|string|max:255',
+            'longitude' =>'required|string|max:255',
+            'images' => 'array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
-        // Crear la mascota
+
         $pet = Pet::create([
-            'name' => $validatedData['name'],
-            'age' => $validatedData['age'],
-            'breed' => $validatedData['breed'],
-            'size' => $validatedData['size'],
-            'description' => $validatedData['description'],
-            'location' => $validatedData['location'],
-            'adoption_status' => $validatedData['adoption_status'],
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
+            'name' => $request->name,
+            'age' => $request->age,
+            'breed' => $request->breed,
+            'size' => $request->size,
+            'description' => $request->description,
+            'location' => $request->location,
+            'adoption_status' => $request->adoption_status,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
-    
-      
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $image) {
-            $extension = $image->getClientOriginalExtension();
-            $uniqueName = uniqid() . '_' . time() . '.' . $extension;
-            $path = $image->storeAs('pets', $uniqueName, 'public');
-            $savePath = Storage::url($path);
-            $pet->images()->create(['urlImage' => $savePath]);
-        }
-    }
-    
-        return response()->json($pet->load('images'));
-    }
-    
+            if ($request->has('images')) {
+                PetImageController::store(new Request(['images' => $request->images, 'pet_id' => $pet->id]));
+            }
+            $pet->load('images');
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pet $pet)
-    {
-        // Verificar que la mascota pertenece al usuario autenticado
-        if ($pet->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        return response()->json($pet, 201);
 
-        // Mostrar la mascota con sus imágenes
-        return response()->json($pet->load('images'));
     }
 
     /**
@@ -83,44 +64,35 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
-        // Verificar que la mascota pertenece al usuario autenticado
         if ($pet->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Validación de los datos
         $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'age' => 'sometimes|required|integer|min:0',
-            'breed' => 'sometimes|required|string|max:255',
-            'size' => 'sometimes|required|string|max:50',
-            'description' => 'sometimes|required|string',
-            'location' => 'sometimes|required|string|max:255',
-            'adoption_status' => 'sometimes|required|in:available,adopted,in_process',
-            'images' => 'sometimes|required|array',
-            'images.*' => 'sometimes|required|url',
+            'name' => 'required|string|max:255',
+            'age' => 'required|integer|min:0',
+            'breed' => 'required|string|max:255',
+            'size' => 'required|string|max:255',
+            'description' => 'required|string',
+            'location' => 'required|string|max:255',
+            'adoption_status' => 'required|in:available,adopted,in_process',
+            'latitude' => 'required|string|max:255',
+            'longitude' =>'required|string|max:255',
         ]);
 
-        // Actualizar la mascota
-        $pet->update($request->only([
-            'name', 'age', 'breed', 'size', 'description', 'location', 'adoption_status'
-        ]));
+        $pet->update([
+            'name' => $request->name,
+            'age' => $request->age,
+            'breed' => $request->breed,
+            'size' => $request->size,
+            'description' => $request->description,
+            'location' => $request->location,
+            'adoption_status' => $request->adoption_status,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+        ]);
 
-        // Si se proporcionan nuevas imágenes, actualizarlas
-        if ($request->has('images')) {
-            // Eliminar las imágenes actuales
-            $pet->images()->delete();
-
-            // Guardar las nuevas imágenes
-            foreach ($request->images as $imageUrl) {
-                PetImage::create([
-                    'pet_id' => $pet->id,
-                    'urlImage' => $imageUrl,
-                ]);
-            }
-        }
-
-        return response()->json(['message' => 'Pet updated successfully!', 'pet' => $pet]);
+        return response()->json($pet, 200);
     }
 
     /**
@@ -128,13 +100,14 @@ class PetController extends Controller
      */
     public function destroy(Pet $pet)
     {
-        // Verificar que la mascota pertenece al usuario autenticado
         if ($pet->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Eliminar la mascota y sus imágenes asociadas
-        $pet->delete();
+        foreach ($pet->images as $image) {
+            $image->delete(); 
+        }
+        $pet->delete(); 
 
         return response()->json(['message' => 'Pet deleted successfully!']);
     }

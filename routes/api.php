@@ -28,3 +28,5 @@ Route::apiResource('images_pets', PetImageController::class)->only(['index', 'sh
 Route::post('images_pets/{id}', [PetImageController::class, 'update']);
 
 Route::middleware('auth:api')->get('user_data', [AuthController::class, 'getAuthenticatedUser']);
+
+
