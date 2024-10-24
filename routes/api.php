@@ -17,12 +17,13 @@ Route::post('logout', [AuthController::class, 'logout']);
 
 
 Route::middleware('auth:api')->group(function () {
-    Route::get('pets', [PetController::class, 'index']);
     Route::post('pets', [PetController::class, 'store']);
     Route::get('pets/{pet}', [PetController::class, 'show']);
     Route::put('pets/{pet}', [PetController::class, 'update']);
     Route::delete('pets/{pet}', [PetController::class, 'destroy']);
 });
+Route::get('pets', [PetController::class, 'index']);
+
 
 Route::apiResource('images_pets', PetImageController::class)->only(['index', 'show', 'store', 'destroy']);
 Route::post('images_pets/{id}', [PetImageController::class, 'update']);

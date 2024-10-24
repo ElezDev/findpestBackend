@@ -14,9 +14,13 @@ class PetController extends Controller
     public function index()
     {
         // Obtener las mascotas del usuario autenticado
-        $pets = Pet::where('user_id', Auth::id())->with('images', 'user')->get();
+        // $pets = Pet::where('user_id', Auth::id())->with('images', 'user')->get();
 
+        // return response()->json($pets);
+
+        $pets = Pet::all()->load('images');
         return response()->json($pets);
+
     }
 
     /**
@@ -24,20 +28,6 @@ class PetController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'age' => 'required|integer|min:0',
-            'breed' => 'required|string|max:255',
-            'size' => 'required|string|max:255',
-            'description' => 'required|string',
-            'location' => 'required|string|max:255',
-            'adoption_status' => 'required|in:available,adopted,in_process',
-            'latitude' => 'required|string|max:255',
-            'longitude' =>'required|string|max:255',
-            'images' => 'array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
         $pet = Pet::create([
             'user_id' => Auth::id(),
             'name' => $request->name,
@@ -50,15 +40,17 @@ class PetController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
         ]);
-            if ($request->has('images')) {
-                PetImageController::store(new Request(['images' => $request->images, 'pet_id' => $pet->id]));
-            }
-            $pet->load('images');
-
+    
+        // Manejo de imágenes
+        if ($request->has('images')) {
+            PetImageController::store(new Request(['images' => $request->images, 'pet_id' => $pet->id]));
+        }
+    
+        $pet->load('images');
+    
         return response()->json($pet, 201);
-
     }
-
+    
     /**
      * Update the specified resource in storage.
      */
