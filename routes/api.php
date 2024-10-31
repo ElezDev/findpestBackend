@@ -31,3 +31,4 @@ Route::post('images_pets/{id}', [PetImageController::class, 'update']);
 Route::middleware('auth:api')->get('user_data', [AuthController::class, 'getAuthenticatedUser']);
 
 
+Route::middleware('auth:api')->get('pets_by_user', [PetController::class, 'getPetsByUser']);

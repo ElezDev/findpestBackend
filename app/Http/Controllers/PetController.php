@@ -11,16 +11,14 @@ class PetController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+
     public function index()
     {
-        // Obtener las mascotas del usuario autenticado
-        // $pets = Pet::where('user_id', Auth::id())->with('images', 'user')->get();
-
-        // return response()->json($pets);
-
-        $pets = Pet::all()->load('images');
+        // Ordenar los registros por 'created_at' en orden descendente
+        $pets = Pet::with(['images', 'user'])->orderBy('created_at', 'desc')->get();
+    
         return response()->json($pets);
-
     }
 
     /**
@@ -102,5 +100,17 @@ class PetController extends Controller
         $pet->delete(); 
 
         return response()->json(['message' => 'Pet deleted successfully!']);
+    }
+
+
+    public function getPetsByUser()
+    {
+        $pets = Pet::where('user_id', Auth::id())->with('images', 'user')->get();
+
+        // return response()->json($pets);
+
+        // $pets = Pet::all()->load('images');
+        return response()->json($pets);
+
     }
 }
