@@ -63,9 +63,9 @@ class AuthController extends Controller
     {
         $validatedData = $request->validate([
             'first_name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
             'last_name' => 'required|string',
+            'email' => 'required|string|email|unique:users|unique:people,email',
+            'password' => 'required|string|min:6',
             'phone_number' => 'nullable|string',
             'address' => 'nullable|string',
             'biography' => 'nullable|string',
@@ -73,7 +73,11 @@ class AuthController extends Controller
         ]);
     
         try {
-            // Crear usuario
+            $existingPerson = Person::where('email', $validatedData['email'])->first();
+            if ($existingPerson) {
+                return response()->json(['error' => 'Ya existe una persona con este email'], 409);
+            }
+    
             $user = User::create([
                 'name' => $validatedData['first_name'],
                 'email' => $validatedData['email'],
@@ -87,7 +91,6 @@ class AuthController extends Controller
                 $profilePicturePath = Storage::url($profilePicturePath);
             }
     
-    
             $person = Person::create([
                 'first_name' => $validatedData['first_name'],
                 'last_name' => $validatedData['last_name'],
@@ -99,7 +102,6 @@ class AuthController extends Controller
                 'image_url' => $profilePicturePath,
             ]);
     
-            // Crear token de autenticación JWT
             $token = JWTAuth::fromUser($user);
     
             return response()->json([
@@ -107,6 +109,9 @@ class AuthController extends Controller
                 'person' => $person,
                 'token' => $token,
             ], 201);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Error de base de datos: ' . $e->getMessage());
+            return response()->json(['error' => 'Error en la base de datos al crear el usuario y la persona'], 500);
         } catch (\Exception $e) {
             Log::error('Error al crear la persona: ' . $e->getMessage());
             return response()->json(['error' => 'No se pudo crear el usuario y la persona'], 500);
