@@ -138,4 +138,9 @@ class PetController extends Controller
 
         return response()->json(['message' => 'Pet deleted successfully!']);
     }
+
+
+   public function getAllPets(){
+        return Pet::with('images', 'user')->get();
+    }
 }

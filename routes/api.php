@@ -24,6 +24,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('pets/{pet}', [PetController::class, 'destroy']);
 });
 
+
+Route::get('all_pets', [PetController::class,'getAllPets']);
 Route::apiResource('images_pets', PetImageController::class)->only(['index', 'show', 'store', 'destroy']);
 Route::post('images_pets/{id}', [PetImageController::class, 'update']);
 
