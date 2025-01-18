@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relación con la tabla `users`
             $table->text('biography')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('image_url');
             $table->timestamps();
         });
