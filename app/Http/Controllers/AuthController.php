@@ -35,7 +35,7 @@ class AuthController extends Controller
         ]);
 
         // Crear la persona relacionada
-        Person ::create([
+        Person::create([
             'first_name' => $validatedData['first_name'],
             'last_name' => $validatedData['last_name'],
             'phone_number' => $validatedData['phone_number'],
