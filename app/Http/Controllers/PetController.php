@@ -113,4 +113,9 @@ class PetController extends Controller
         return response()->json($pets);
 
     }
+
+    public function getAllPets(){
+       $pets = Pet::with(['images', 'user'])->orderBy('created_at', 'desc')->get();
+       return response()->json($pets);
+    }
 }
