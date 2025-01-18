@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('breed');
             $table->string('size');
             $table->text('description');
-            $table->string('image_url');
+            $table->string('image_url')->nullable();
             $table->string('location');
             $table->enum('adoption_status', ['available', 'adopted', 'in_process']);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');

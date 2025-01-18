@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pet extends Model
 {
+    protected $table = 'pets';
     use HasFactory;
 
-    protected $guarded = [
-      
-    ];
+    protected $guarded = [];
 
     public function images()
     {
