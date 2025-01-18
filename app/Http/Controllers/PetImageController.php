@@ -26,11 +26,7 @@ class PetImageController extends Controller
      */
     public static function store(Request $request): JsonResponse
     {
-        // $request->validate([
-        //     'pet_id' => 'required|integer',
-        //     'images' => 'required|array',
-        //     'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-        // ]);
+       
 
         $imagesData = [];
         foreach ($request->images as $image) {
@@ -62,11 +58,7 @@ class PetImageController extends Controller
      */
     public static function update(Request $request, string $id): JsonResponse
     {
-        // $request->validate([
-        //     'pet_id' => 'required|integer',
-        //     'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
-        // ]);
-
+      
         $petImage = PetImage::findOrFail($id);
 
         $petImage->pet_id = $request->pet_id;
